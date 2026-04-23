@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  # ── Production build (nginx) ────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      target: production
+    ports:
+      - '3000:80'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ── Development server (Vite HMR) ──────────────────────────────────────────
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '5173:5173'
+    volumes:
+      - .:/app
+      - /app/node_modules     # anonymous volume keeps host node_modules isolated
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
